@@ -59,8 +59,12 @@ def run() -> dict:
     media = MediaFileUpload(metadata["video_path"], resumable=False)
     request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
     response = request.execute()
+    video_id = response.get("id")
+    if video_id and metadata.get("thumbnail_path"):
+        thumb_media = MediaFileUpload(metadata["thumbnail_path"], resumable=False)
+        youtube.thumbnails().set(videoId=video_id, media_body=thumb_media).execute()
 
-    return {"platform": "youtube", "video_id": response.get("id"), "status": "uploaded"}
+    return {"platform": "youtube", "video_id": video_id, "status": "uploaded"}
 
 
 if __name__ == "__main__":

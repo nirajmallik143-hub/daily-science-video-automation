@@ -1,9 +1,12 @@
 import json
 import logging
 import os
+import time
+from hashlib import sha1
 from pathlib import Path
 
 from dotenv import load_dotenv
+import requests
 
 import generate_script
 import generate_video
@@ -42,6 +45,27 @@ def safe_run(label: str, fn):
         return {"status": "failed", "error": str(exc)}
 
 
+def upload_video_to_cloudinary(video_path: str) -> str | None:
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    if not cloud_name or not api_key or not api_secret:
+        return None
+
+    timestamp = int(time.time())
+    signature_raw = f"timestamp={timestamp}{api_secret}"
+    signature = sha1(signature_raw.encode("utf-8")).hexdigest()
+    with open(video_path, "rb") as video_file:
+        response = requests.post(
+            f"https://api.cloudinary.com/v1_1/{cloud_name}/video/upload",
+            data={"api_key": api_key, "timestamp": timestamp, "signature": signature},
+            files={"file": video_file},
+            timeout=120,
+        )
+    response.raise_for_status()
+    return response.json().get("secure_url")
+
+
 def run_pipeline() -> dict:
     load_dotenv()
     setup_logging()
@@ -56,6 +80,12 @@ def run_pipeline() -> dict:
     if results["script"]["status"] == "success":
         results["video"] = safe_run("video_generation", generate_video.run)
         if results["video"]["status"] == "success":
+            video_result = results["video"]["result"]
+            generated_video_url = upload_video_to_cloudinary(video_result["video_path"])
+            if generated_video_url:
+                os.environ.setdefault("INSTAGRAM_VIDEO_URL", generated_video_url)
+                os.environ.setdefault("TIKTOK_VIDEO_URL", generated_video_url)
+                video_result["public_video_url"] = generated_video_url
             if _env_enabled("ENABLE_YOUTUBE"):
                 results["uploads"]["youtube"] = safe_run("upload_youtube", upload_youtube.run)
             if _env_enabled("ENABLE_INSTAGRAM"):
@@ -82,4 +112,11 @@ def run_pipeline() -> dict:
 
 
 if __name__ == "__main__":
-    print(json.dumps(run_pipeline(), indent=2))
+    pipeline_results = run_pipeline()
+    print(json.dumps(pipeline_results, indent=2))
+    failure_exists = (
+        pipeline_results["script"]["status"] != "success"
+        or (pipeline_results["video"] and pipeline_results["video"]["status"] != "success")
+        or any(result["status"] != "success" for result in pipeline_results["uploads"].values())
+    )
+    raise SystemExit(1 if failure_exists else 0)
