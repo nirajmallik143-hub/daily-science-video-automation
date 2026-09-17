@@ -1,0 +1,45 @@
+{
+  "video": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "max_duration_seconds": 60,
+    "voice_language": "en",
+    "caption_words_per_line": 7,
+    "font_size": 56
+  },
+  "paths": {
+    "stock_footage_dir": "assets/stock_footage",
+    "output_dir": "output"
+  },
+  "generation": {
+    "model": "gpt-4o-mini",
+    "temperature": 0.7,
+    "max_tokens": 650
+  },
+  "platform_templates": {
+    "youtube": {
+      "title_template": "{topic}: 60-Second Science",
+      "description_template": "Daily science short on {topic}. #science #education #shorts",
+      "tags": [
+        "science",
+        "math",
+        "quantum",
+        "education",
+        "shorts"
+      ],
+      "categoryId": "27",
+      "privacyStatus": "public"
+    },
+    "instagram": {
+      "caption_template": "{topic} in 60 seconds! Follow for daily science. #science #reels #education"
+    },
+    "tiktok": {
+      "caption_template": "{topic} explained in 60s 🚀 #science #learnontiktok #education"
+    }
+  },
+  "schedule": {
+    "cron": "0 9 * * *",
+    "timezone": "UTC"
+  }
+}
