@@ -49,9 +49,11 @@ def _pick_base_video(config: dict, duration: float):
 
     if stock_files:
         clip = VideoFileClip(str(random.choice(stock_files)))
-        clip = clip.with_duration(min(duration, clip.duration)).resized((width, height))
-        return clip
-    return ColorClip(size=(width, height), color=(8, 20, 35), duration=duration)
+        final_duration = min(duration, clip.duration)
+        clip = clip.with_duration(final_duration).resized((width, height))
+        return clip, final_duration
+    clip = ColorClip(size=(width, height), color=(8, 20, 35), duration=duration)
+    return clip, duration
 
 
 def _make_thumbnail(topic: str, output_dir: Path) -> Path:
@@ -89,7 +91,9 @@ def run() -> dict:
     duration = min(audio_clip.duration, float(config["video"]["max_duration_seconds"]))
     audio_clip = audio_clip.subclipped(0, duration)
 
-    base_video = _pick_base_video(config, duration).with_audio(audio_clip)
+    base_video, duration = _pick_base_video(config, duration)
+    audio_clip = audio_clip.subclipped(0, duration)
+    base_video = base_video.with_audio(audio_clip)
     caption_lines = _get_caption_lines(text, config["video"]["caption_words_per_line"])
     line_duration = max(duration / max(len(caption_lines), 1), 1.0)
     captions = []

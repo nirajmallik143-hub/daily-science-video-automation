@@ -56,7 +56,7 @@ def run() -> dict:
     }
 
     youtube = build_youtube_client()
-    media = MediaFileUpload(metadata["video_path"], chunksize=-1, resumable=True)
+    media = MediaFileUpload(metadata["video_path"], resumable=False)
     request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
     response = request.execute()
 

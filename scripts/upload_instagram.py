@@ -28,15 +28,15 @@ def run() -> dict:
     topic = metadata["topic"]
 
     token = os.getenv("META_ACCESS_TOKEN")
-    page_id = os.getenv("INSTAGRAM_PAGE_ID")
+    instagram_account_id = os.getenv("INSTAGRAM_ACCOUNT_ID")
     video_url = os.getenv("INSTAGRAM_VIDEO_URL")
-    if not token or not page_id:
-        raise ValueError("META_ACCESS_TOKEN and INSTAGRAM_PAGE_ID are required.")
+    if not token or not instagram_account_id:
+        raise ValueError("META_ACCESS_TOKEN and INSTAGRAM_ACCOUNT_ID are required.")
     if not video_url:
         raise ValueError("INSTAGRAM_VIDEO_URL is required and must be a publicly accessible video URL.")
 
     caption = config["platform_templates"]["instagram"]["caption_template"].format(topic=topic)
-    base_url = f"https://graph.facebook.com/v20.0/{page_id}"
+    base_url = f"https://graph.facebook.com/v20.0/{instagram_account_id}"
 
     create_resp = requests.post(
         f"{base_url}/media",
