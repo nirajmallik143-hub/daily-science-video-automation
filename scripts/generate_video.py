@@ -26,12 +26,13 @@ def load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def load_latest_script_record() -> dict:
+def load_latest_script_record() -> tuple[Path, dict]:
     scripts_dir = OUTPUT_DIR / "scripts"
     script_files = sorted(scripts_dir.glob("*.json"))
     if not script_files:
         raise FileNotFoundError("No generated script found in output/scripts.")
-    return json.loads(script_files[-1].read_text(encoding="utf-8"))
+    script_path = script_files[-1]
+    return script_path, json.loads(script_path.read_text(encoding="utf-8"))
 
 
 def _get_caption_lines(text: str, words_per_line: int) -> list[str]:
@@ -69,7 +70,7 @@ def _make_thumbnail(topic: str, output_dir: Path) -> Path:
 
 def run() -> dict:
     config = load_json(CONFIG_PATH)
-    script_record = load_latest_script_record()
+    script_path, script_record = load_latest_script_record()
     text = script_record["script_text"]
     topic = script_record["topic"]
 
@@ -123,7 +124,7 @@ def run() -> dict:
         "category": script_record["category"],
         "video_path": str(video_path),
         "thumbnail_path": str(thumb_path),
-        "script_path": str((OUTPUT_DIR / "scripts").resolve()),
+        "script_path": str(script_path.resolve()),
     }
     metadata_path = run_dir / "metadata.json"
     metadata_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

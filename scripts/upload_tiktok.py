@@ -31,15 +31,18 @@ def run() -> dict:
     client_key = os.getenv("TIKTOK_CLIENT_ID")
     client_secret = os.getenv("TIKTOK_CLIENT_SECRET")
     access_token = os.getenv("TIKTOK_ACCESS_TOKEN")
+    video_url = os.getenv("TIKTOK_VIDEO_URL")
     if not client_key or not client_secret or not access_token:
         raise ValueError("TIKTOK_CLIENT_ID, TIKTOK_CLIENT_SECRET and TIKTOK_ACCESS_TOKEN are required.")
+    if not video_url:
+        raise ValueError("TIKTOK_VIDEO_URL is required and must be a publicly accessible video URL.")
 
     auth_header = "Bearer " + access_token
     response = requests.post(
         "https://open.tiktokapis.com/v2/post/publish/video/init/",
         headers={"Authorization": auth_header, "Content-Type": "application/json"},
         json={
-            "source_info": {"source": "FILE_UPLOAD", "video_url": metadata["video_path"]},
+            "source_info": {"source": "PULL_FROM_URL", "video_url": video_url},
             "post_info": {"title": caption[:150]},
         },
         timeout=60,

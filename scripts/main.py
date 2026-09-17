@@ -53,27 +53,29 @@ def run_pipeline() -> dict:
         "uploads": {},
     }
 
-    if results["script"]["status"] != "success":
-        return results
-
-    results["video"] = safe_run("video_generation", generate_video.run)
-    if results["video"]["status"] != "success":
-        return results
-
-    if _env_enabled("ENABLE_YOUTUBE"):
-        results["uploads"]["youtube"] = safe_run("upload_youtube", upload_youtube.run)
-    if _env_enabled("ENABLE_INSTAGRAM"):
-        results["uploads"]["instagram"] = safe_run("upload_instagram", upload_instagram.run)
-    if _env_enabled("ENABLE_TIKTOK"):
-        results["uploads"]["tiktok"] = safe_run("upload_tiktok", upload_tiktok.run)
+    if results["script"]["status"] == "success":
+        results["video"] = safe_run("video_generation", generate_video.run)
+        if results["video"]["status"] == "success":
+            if _env_enabled("ENABLE_YOUTUBE"):
+                results["uploads"]["youtube"] = safe_run("upload_youtube", upload_youtube.run)
+            if _env_enabled("ENABLE_INSTAGRAM"):
+                results["uploads"]["instagram"] = safe_run("upload_instagram", upload_instagram.run)
+            if _env_enabled("ENABLE_TIKTOK"):
+                results["uploads"]["tiktok"] = safe_run("upload_tiktok", upload_tiktok.run)
 
     summary_path = ROOT_DIR / "output" / "last_run.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
 
+    failed_stages = []
+    if results["script"]["status"] != "success":
+        failed_stages.append("script_generation")
+    if results["video"] and results["video"]["status"] != "success":
+        failed_stages.append("video_generation")
     failed_uploads = [k for k, v in results["uploads"].items() if v["status"] != "success"]
-    if failed_uploads:
-        logging.warning("Pipeline completed with failed uploads: %s", ", ".join(failed_uploads))
+    failed_stages.extend([f"upload_{name}" for name in failed_uploads])
+    if failed_stages:
+        logging.warning("Pipeline completed with failures: %s", ", ".join(failed_stages))
     else:
         logging.info("Pipeline completed successfully.")
     return results
