@@ -1,0 +1,37 @@
+{
+  "quantum_physics": [
+    "Wave-particle duality",
+    "Quantum tunneling",
+    "Superposition",
+    "Heisenberg uncertainty principle",
+    "Quantum entanglement"
+  ],
+  "quantum_computing": [
+    "What is a qubit?",
+    "Quantum gates",
+    "Quantum error correction",
+    "Shor's algorithm",
+    "Quantum supremacy vs advantage"
+  ],
+  "newton_laws": [
+    "Newton's first law",
+    "Newton's second law",
+    "Newton's third law",
+    "Inertia in daily life",
+    "Force, mass, and acceleration"
+  ],
+  "math": [
+    "Fibonacci sequence in nature",
+    "Prime numbers",
+    "What is calculus?",
+    "Pythagorean theorem",
+    "Probability in everyday decisions"
+  ],
+  "science": [
+    "Why the sky is blue",
+    "How black holes form",
+    "What causes auroras",
+    "How vaccines work",
+    "The greenhouse effect"
+  ]
+}

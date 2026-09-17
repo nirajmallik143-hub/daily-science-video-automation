@@ -1,0 +1,18 @@
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# generated outputs
+output/
+assets/stock_footage/
+
+# local creds
+credentials.json
+token.json
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
